@@ -1,0 +1,7 @@
+{
+    "menu_bg":"menu/stage.png",
+    "menu_btns":["menu/stage-1.png","menu/stage-2.png","menu/stage-3.png"],
+    "menu_circle1":"menu/stage-circle1.png",
+    "menu_circle2":"menu/stage-circle2.png",
+    "menu_title":"menu/stage-cygnal.png"
+}
