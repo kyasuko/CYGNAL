@@ -49,5 +49,12 @@
         "height": 82,
         "x": 186,
         "y": 180
+    },
+    "stage_bg":{
+        "src": "stage/bg.png",
+        "width": 1066,
+        "height": 600,
+        "x": -133,
+        "y": 0
     }
 }

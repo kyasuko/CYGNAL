@@ -1,52 +1,172 @@
 (function () {
 
-    const CANVAS_DATA = { W: 800, H: 600 };
+    const CANVAS_DATA = { W: 800, H: 600, ID: "myCanvas" };
     let ImgFactory = {};
     let gameCtx;
     let renderTick;
     let init = function () {
-        let gameCanvas = document.getElementById("myCanvas");
+        let gameCanvas = document.getElementById(CANVAS_DATA.ID);
         gameCtx = gameCanvas.getContext("2d");
-        RenderManeger();
+        GameManeger();
 
 
     }
-    let RenderManeger = function () {
+    let GameManeger = function () {
         let varableManeger = {
+            clear: {
+                Render: function () {
+                    gameCtx.clearRect(0, 0, CANVAS_DATA.W, CANVAS_DATA.H);
+                }
+            },
             menu: {
+                isOpen: true,
                 circle1Angle: 0,
-                circle2Angle: 0
+                circle2Angle: 0,
+                changeAngle: function (angle) {
+                    if (angle >= 360) angle = 0;
+                    if (angle <= -360) angle = 0;
+                    return angle;
+                },
+                Render: function () {
+                    if (!this.isOpen) return;
+
+                    this.circle1Angle = this.changeAngle(this.circle1Angle + 1);
+                    this.circle2Angle = this.changeAngle(this.circle2Angle - 1);
+
+
+                    imgFactoryDraw(ImgFactory.menu_bg);
+                    for (var i = 0; i < ImgFactory.menu_btns.length; i++) {
+                        imgFactoryDraw(ImgFactory.menu_btns[i]);
+                        imgFactoryDraw(ImgFactory.menu_circle1, ImgFactory.menu_btns[i].x, ImgFactory.menu_btns[i].y, this.circle1Angle)
+                        imgFactoryDraw(ImgFactory.menu_circle2, ImgFactory.menu_btns[i].x, ImgFactory.menu_btns[i].y, this.circle2Angle)
+                    }
+                    imgFactoryDraw(ImgFactory.menu_title)
+                }
+            },
+            stage: {
+                difficulty: 0,
+                isOpen: false,
+                Render: function () {
+                    if (!this.isOpen) return;
+
+                    imgFactoryDraw(ImgFactory.stage_bg)
+                }
+            }
+        }
+
+        let eventManeger = {
+            changeCursor: {
+                pointer: function () { $("#" + CANVAS_DATA.ID).css('cursor', 'pointer') },
+                default: function () { $("#" + CANVAS_DATA.ID).css('cursor', 'default') }
+            },
+            mouse: {
+                initEvent: function () {
+                    if (varableManeger.menu.isOpen) {
+                        this.menu.addEvent();
+                    }
+                    else {
+
+                    }
+                },
+                isInCircle: function (x0, y0, x1, y1, r) {
+                    return Math.sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0)) < r
+                },
+                menu: {
+                    end: function (difficulty) {
+                        varableManeger.menu.isOpen = false;
+                        varableManeger.stage.difficulty = difficulty;
+                        varableManeger.stage.isOpen = true;
+                        eventManeger.changeCursor.default();
+                        this.removeEvent();
+                    },
+                    btnsDetect: function (e, element, callback) {
+
+                        let parentOffset = $(element).offset();
+                        let xPosition = e.pageX - parentOffset.left;
+                        let yPosition = e.pageY - parentOffset.top;
+
+                        let menuBtns = ImgFactory.menu_btns;
+                        for (var i = 0; i < menuBtns.length; i++) {
+                            let menuBtnX = menuBtns[i].x + menuBtns[i].width / 2;
+                            let menuBtnY = menuBtns[i].y + menuBtns[i].height / 2;
+                            let menuBtnRadius = menuBtns[i].width / 2;
+
+                            if (eventManeger.mouse.isInCircle(xPosition, yPosition, menuBtnX, menuBtnY, menuBtnRadius)) {
+
+                                callback({ isin: true, difficulty: i });
+                                return;
+                            }
+                        }
+
+                        callback({ isin: false })
+                    },
+                    handleClick: function (e) {
+                        let self = e.data.self;
+                        self.btnsDetect(e, this, function (response) {
+                            if (!response.isin) return;
+                            self.end(response.difficulty);
+                        })
+                    },
+                    handleMouseMove: function (e) {
+                        let self = e.data.self;
+                        self.btnsDetect(e, this, function (response) {
+                            if (response.isin) {
+                                eventManeger.changeCursor.pointer()
+                            } else {
+                                eventManeger.changeCursor.default()
+                            }
+                        })
+                    },
+                    addEvent: function () {
+                        $("#" + CANVAS_DATA.ID).on("click", { self: this }, this.handleClick);
+                        $("#" + CANVAS_DATA.ID).on("mousemove", { self: this }, this.handleMouseMove);
+                    },
+                    removeEvent: function () {
+                        $("#" + CANVAS_DATA.ID).off("click", this.handleClick);
+                        $("#" + CANVAS_DATA.ID).off("mousemove", this.handleMouseMove);
+                    }
+                },
+                clearStage: {
+                    add: function () {
+
+                    },
+                    remove: function () {
+
+                    }
+                }
+            },
+
+
+
+            keydown: {
+                initEvent: function () {
+                    window.addEventListener("keydown", function (e) {
+
+                        if ([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+                            e.preventDefault();
+                        }
+                    }, false);
+                }
             }
         }
 
         let Render = function () {
             requestAnimationFrame(Render);
 
-
-            renderClear()
-            menuRender();
+            varableManeger.clear.Render();
+            varableManeger.menu.Render();
+            varableManeger.stage.Render();
 
         }
-
-        let renderClear = function () {
-            gameCtx.clearRect(0, 0, CANVAS_DATA.W, CANVAS_DATA.H);
-        }
-        let menuRender = function () {
-            let menuVar = varableManeger.menu;
-            menuVar.circle1Angle += 1;
-            menuVar.circle2Angle -= 1;
-
-
-            imgFactoryDraw(ImgFactory.menu_bg);
-            for (var i = 0; i < ImgFactory.menu_btns.length; i++) {
-                imgFactoryDraw(ImgFactory.menu_btns[i]);
-                imgFactoryDraw(ImgFactory.menu_circle1, ImgFactory.menu_btns[i].x, ImgFactory.menu_btns[i].y, menuVar.circle1Angle)
-                imgFactoryDraw(ImgFactory.menu_circle2, ImgFactory.menu_btns[i].x, ImgFactory.menu_btns[i].y, menuVar.circle2Angle)
-            }
-            imgFactoryDraw(ImgFactory.menu_title)
+        let setEvent = function () {
+            eventManeger.keydown.initEvent();
+            eventManeger.mouse.initEvent();
         }
 
 
+
+
+        setEvent();
         Render();
 
 
@@ -73,14 +193,7 @@
 
     }
 
-    let eventInit = function () {
-        window.addEventListener("keydown", function (e) {
 
-            if ([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
-                e.preventDefault();
-            }
-        }, false);
-    }
 
     let loadAllImg = new Promise((resolve) => {
         let currentImgCount = 0;
@@ -157,7 +270,7 @@
     });
 
     window.onload = function () {
-        eventInit();
+
 
 
         loadAllImg.then(function () {
