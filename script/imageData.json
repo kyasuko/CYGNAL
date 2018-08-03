@@ -1,7 +1,39 @@
 {
-    "menu_bg":"menu/stage.png",
-    "menu_btns":["menu/stage-1.png","menu/stage-2.png","menu/stage-3.png"],
-    "menu_circle1":"menu/stage-circle1.png",
-    "menu_circle2":"menu/stage-circle2.png",
-    "menu_title":"menu/stage-cygnal.png"
+    "menu_bg": {
+        "src": "menu/stage.png",
+        "width": 1920,
+        "height": 1080
+    },
+    "menu_btns": [
+        {
+            "src": "menu/stage-1.png",
+            "width": 211,
+            "height": 211
+        },
+        {
+            "src": "menu/stage-2.png",
+            "width": 211,
+            "height": 211
+        },
+        {
+            "src": "menu/stage-3.png",
+            "width": 211,
+            "height": 211
+        }
+    ],
+    "menu_circle1": {
+        "src": "menu/stage-circle1.png",
+        "width": 211,
+        "height": 211
+    },
+    "menu_circle2": {
+        "src": "menu/stage-circle2.png",
+        "width": 211,
+        "height": 211
+    },
+    "menu_title": {
+        "src": "menu/stage-cygnal.png",
+        "width": 1028,
+        "height": 197
+    }
 }

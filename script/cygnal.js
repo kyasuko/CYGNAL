@@ -5,8 +5,8 @@
         let gameCanvas = document.getElementById("myCanvas");
         gameCtx = gameCanvas.getContext("2d");
 
-        gameCtx.drawImage(ImgFactory.menu_bg, 0, 0,800,600);
-        console.log('1213213213');
+        gameCtx.drawImage(ImgFactory.menu_bg.img, 0, 0,ImgFactory.menu_bg.width,ImgFactory.menu_bg.height);
+        
  
     }
 
@@ -20,7 +20,7 @@
                     if (Array.isArray(obj)) {
                         for (var i = 0; i < obj.length; i++) {
                             callback({
-                                imagesrc: obj[i],
+                                imageobj: obj[i],
                                 key: key,
                                 isArray: true,
                                 index: i
@@ -29,7 +29,7 @@
                     }
                     else {
                         callback({
-                            imagesrc: obj,
+                            imageobj: obj,
                             key: key,
                             isArray: false,
                         })
@@ -39,25 +39,29 @@
 
         }
         let imageLoadSystem = function (response) {
-            var image = new Image();
+            let image = new Image();
             image.onload = function () {
+                var imageobj = response.imageobj;
+                imageobj.img=image
+
                 currentImgCount++
                 if (response.isArray) {
                     if (ImgFactory[response.key] == null) {
                         ImgFactory[response.key] = [];
                     }
-                    ImgFactory[response.key][response.index] = image;
+                   
+                    ImgFactory[response.key][response.index] = imageobj;
 
                 } else {
-                    ImgFactory[response.key] = image;
+                    ImgFactory[response.key] = imageobj;
                 }
                 if (currentImgCount == totalImgLengh) {
                     resolve();
                     
                 }
-                console.log(currentImgCount+","+totalImgLengh);
+        
             }
-            image.src = 'img/' + response.imagesrc;
+            image.src = 'img/' + response.imageobj.src;
 
 
         }
