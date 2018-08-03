@@ -1,39 +1,53 @@
 {
     "menu_bg": {
         "src": "menu/stage.png",
-        "width": 1920,
-        "height": 1080
+        "width": 800,
+        "height": 600,
+        "x": 0,
+        "y": 0
     },
     "menu_btns": [
         {
             "src": "menu/stage-1.png",
-            "width": 211,
-            "height": 211
+            "width": 88,
+            "height": 88,
+            "x": 220,
+            "y": 310
         },
         {
             "src": "menu/stage-2.png",
-            "width": 211,
-            "height": 211
+            "width": 88,
+            "height": 88,
+            "x": 356,
+            "y": 310
         },
         {
             "src": "menu/stage-3.png",
-            "width": 211,
-            "height": 211
+            "width": 88,
+            "height": 88,
+            "x": 492,
+            "y": 310
         }
     ],
     "menu_circle1": {
         "src": "menu/stage-circle1.png",
-        "width": 211,
-        "height": 211
+        "width": 88,
+        "height": 88,
+        "x": 0,
+        "y": 0
     },
     "menu_circle2": {
         "src": "menu/stage-circle2.png",
-        "width": 211,
-        "height": 211
+        "width": 88,
+        "height": 88,
+        "x": 0,
+        "y": 0
     },
     "menu_title": {
         "src": "menu/stage-cygnal.png",
-        "width": 1028,
-        "height": 197
+        "width": 428,
+        "height": 82,
+        "x": 186,
+        "y": 180
     }
 }
