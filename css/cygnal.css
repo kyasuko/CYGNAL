@@ -8,6 +8,25 @@ body {
 	margin: 50px 0;
 }
 .container {
-    width: 1024px;
+    width: 800px;
     margin: 0 auto;
+}
+.gameExplanation {
+    line-height: 1.65;
+    margin-top: 50px;
+    margin-bottom: 10px;
+
+}
+.gameExplanation table{
+    border: 1px solid #5FBFFF;
+    border-collapse: collapse;
+    width: 100%;
+   
+}
+.gameExplanation td, th {
+    border: 1px solid #5FBFFF;
+    padding: 7px;
+}
+.gameExplanation  th {
+    width:205px;
 }
