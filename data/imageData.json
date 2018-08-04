@@ -56,5 +56,33 @@
         "height": 600,
         "x": -133,
         "y": 0
+    },
+    "cube_normal":{
+        "src": "object/cube_normal.png",
+        "width": 40,
+        "height": 40,
+        "x": 0,
+        "y": 0
+    },
+    "cube_navigation":{
+        "src": "object/cube_navigation.png",
+        "width": 40,
+        "height": 40,
+        "x": 0,
+        "y": 0
+    },
+    "cube_portal_start":{
+        "src": "object/cube_portal_start.png",
+        "width": 40,
+        "height": 40,
+        "x": 0,
+        "y": 0
+    },
+    "cube_portal_end":{
+        "src": "object/cube_portal_end.png",
+        "width": 40,
+        "height": 40,
+        "x": 0,
+        "y": 0
     }
 }

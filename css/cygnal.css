@@ -39,3 +39,7 @@ body {
         -ms-user-select: none; /* Internet Explorer/Edge */
             user-select: none; 
 }
+.copyright{
+    margin-top: 50px;
+    font-size: 12px;
+}

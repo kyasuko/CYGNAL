@@ -1,0 +1,37 @@
+[
+    {
+        "difficulty": 0,
+        "no": 0,
+        "objects": [
+            {
+                "type": 0,
+                "angle": 0,
+                "position": {
+                    "x": 0,
+                    "y": 0
+                }
+            },{
+                "type": 1,
+                "angle": 180,
+                "position": {
+                    "x": 40,
+                    "y": 40
+                }
+            },{
+                "type": 2,
+                "angle": 90,
+                "position": {
+                    "x": 80,
+                    "y": 0
+                }
+            },{
+                "type": 3,
+                "angle": 90,
+                "position": {
+                    "x": 120,
+                    "y": 0
+                }
+            }
+        ]
+    }
+]
