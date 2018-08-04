@@ -14,5 +14,37 @@
     {
         "type": 3,
         "name": "cube_portal_end"
+    },
+    {
+        "type": 4,
+        "name": "cube_bomb"
+    },
+    {
+        "type": 5,
+        "name": "Circle"
+    },
+    {
+        "type": 6,
+        "name": "Circle_Blue"
+    },
+    {
+        "type": 7,
+        "name": "Circle_Green"
+    },
+    {
+        "type": 8,
+        "name": "Circle_Purple"
+    },
+    {
+        "type": 9,
+        "name": "Circle_Red"
+    },
+    {
+        "type": 10,
+        "name": "Square"
+    },
+    {
+        "type": 11,
+        "name": "Goal"
     }
 ]

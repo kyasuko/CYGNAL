@@ -3,29 +3,29 @@
         "src": "menu/stage.png",
         "width": 800,
         "height": 600,
-        "x": 0,
-        "y": 0
+        "x": 400,
+        "y": 300
     },
     "menu_btns": [
         {
             "src": "menu/stage-1.png",
             "width": 88,
             "height": 88,
-            "x": 220,
+            "x": 264,
             "y": 310
         },
         {
             "src": "menu/stage-2.png",
             "width": 88,
             "height": 88,
-            "x": 356,
+            "x": 400,
             "y": 310
         },
         {
             "src": "menu/stage-3.png",
             "width": 88,
             "height": 88,
-            "x": 492,
+            "x": 536,
             "y": 310
         }
     ],
@@ -47,42 +47,119 @@
         "src": "menu/stage-cygnal.png",
         "width": 428,
         "height": 82,
-        "x": 186,
+        "x": 400,
         "y": 180
     },
-    "stage_bg":{
+    "stage_bg": {
         "src": "stage/bg.png",
         "width": 1066,
         "height": 600,
-        "x": -133,
-        "y": 0
+        "x": 400,
+        "y": 300
     },
-    "cube_normal":{
+    "cube_normal": {
         "src": "object/cube_normal.png",
-        "width": 40,
-        "height": 40,
+        "width": 50,
+        "height": 50,
         "x": 0,
         "y": 0
     },
-    "cube_navigation":{
+    "cube_navigation": {
         "src": "object/cube_navigation.png",
-        "width": 40,
-        "height": 40,
+        "width": 50,
+        "height": 50,
         "x": 0,
         "y": 0
     },
-    "cube_portal_start":{
+    "cube_portal_start": {
         "src": "object/cube_portal_start.png",
-        "width": 40,
-        "height": 40,
+        "width": 50,
+        "height": 50,
         "x": 0,
         "y": 0
     },
-    "cube_portal_end":{
+    "cube_portal_end": {
         "src": "object/cube_portal_end.png",
-        "width": 40,
-        "height": 40,
+        "width": 50,
+        "height": 50,
         "x": 0,
         "y": 0
-    }
+    },
+    "cube_bomb": {
+        "src": "object/cube_bomb.png",
+        "width": 50,
+        "height": 50,
+        "x": 0,
+        "y": 0
+    },
+    "Circle": {
+        "src": "object/Circle.png",
+        "width": 100,
+        "height": 100,
+        "x": 0,
+        "y": 0
+    },
+    "Circle_Blue": {
+        "src": "object/Circle_Blue.png",
+        "width": 100,
+        "height": 100,
+        "x": 0,
+        "y": 0
+    },
+    "Circle_Green": {
+        "src": "object/Circle_Green.png",
+        "width": 100,
+        "height": 100,
+        "x": 0,
+        "y": 0
+    },
+    "Circle_Purple": {
+        "src": "object/Circle_Purple.png",
+        "width": 100,
+        "height": 100,
+        "x": 0,
+        "y": 0
+    },
+    "Circle_Red": {
+        "src": "object/Circle_Red.png",
+        "width": 100,
+        "height": 100,
+        "x": 0,
+        "y": 0
+    },
+    "Square": {
+        "src": "object/Square.png",
+        "width": 100,
+        "height": 100,
+        "x": 0,
+        "y": 0
+    },
+    "Goal": {
+        "src": "object/Goal.png",
+        "width": 160,
+        "height": 160,
+        "x": 0,
+        "y": 0
+    },
+    "Stand": [
+        {
+            "src": "chara/Stand0.png",
+            "width": 100,
+            "height": 100,
+            "x": 0,
+            "y": 0
+        },{
+            "src": "chara/Stand1.png",
+            "width": 100,
+            "height": 100,
+            "x": 0,
+            "y": 0
+        },{
+            "src": "chara/Stand2.png",
+            "width": 100,
+            "height": 100,
+            "x": 0,
+            "y": 0
+        }
+    ]
 }

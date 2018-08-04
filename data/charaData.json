@@ -1,0 +1,30 @@
+{
+    "ACTION": {
+        "STAND": "Stand",
+        "HURT": "Hurt",
+        "JUMP": "Jump",
+        "RUN": "Run",
+        "SHOOT_F": "Shoot_F",
+        "SHOOT_FD": "Shoot_FD",
+        "SHOOT_FU": "Shoot_FU",
+        "SHOOT_U": "Shoot_U",
+        "SHOOT_J_D": "Shoot_J_D",
+        "SHOOT_J_F": "Shoot_J_F",
+        "SHOOT_J_FD": "Shoot_J_FD",
+        "SHOOT_J_FU": "Shoot_J_FU"
+    },
+    "gravitySpeed": 0.392,
+    "velocityLimit": {
+        "x": 7,
+        "y": 9
+    },
+    "body": {
+        "x": 0,
+        "y": 0,
+        "width": 33,
+        "height": 86
+    },
+    "Stand": {
+        "frameTime": 25
+    }
+}
