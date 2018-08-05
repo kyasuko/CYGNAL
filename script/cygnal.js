@@ -15,12 +15,18 @@
                 CHARA: 0,
                 CUBE: 1
             },
+            OVERLAP_TYPE: {
+                NONE: 0,
+                TOP: 1,
+                DOWN: 2,
+                RIGHT: 3,
+                LEFT: 4
+            },
             objects: [],
-            insertNewBody: function (type, position, posErr, collisionStatus) {
+            insertNewBody: function (collisionStatus) {
                 let obj = {};
-                obj.type = type;
-                obj.pos = position;
-                obj.posErr = posErr;
+                obj.pos = collisionStatus.position;
+                obj.posErr = collisionStatus.body;
                 obj.collisionStatus = collisionStatus;
                 obj.id = this.objects.length;
                 this.objects.push(obj);
@@ -37,19 +43,60 @@
             isMovableType: function (obj) {
                 return obj.collisionStatus.canfall;
             },
-            setIsGround: function (obj, isground) {
-                if (this.isMovableType(obj) && !obj.collisionStatus.isground) {
-                    obj.collisionStatus.velocity.y = 0;
-                    obj.collisionStatus.isground = true;
+            adjustCollisionObj(hitObj, behitObj, overlapType) {
+                let hitObjBody = this.getRealBody(hitObj);
+                let behitObjBody = this.getRealBody(behitObj);
+
+                switch (overlapType) {
+                    case this.OVERLAP_TYPE.TOP:
+                        hitObj.collisionStatus.position.y = behitObjBody.y - behitObjBody.height / 2 - hitObjBody.height / 2
+                        break;
+                    case this.OVERLAP_TYPE.RIGHT:
+                        hitObj.collisionStatus.position.x = behitObjBody.x + behitObjBody.width / 2 + hitObjBody.width / 2
+                        break;
+                    case this.OVERLAP_TYPE.LEFT:
+                        hitObj.collisionStatus.position.x = behitObjBody.x - behitObjBody.width / 2 - hitObjBody.width / 2
+                        break;
                 }
 
+
+            },
+            setPos: {
+                Ground: function (obj, obj2) {
+                    let self = BodyManager;
+                    if (!obj.collisionStatus.isground) {
+                        obj.collisionStatus.velocity.y = 0;
+                        obj.collisionStatus.isground = true;
+
+                        self.adjustCollisionObj(obj, obj2, self.OVERLAP_TYPE.TOP)
+                    }
+
+                },
+                Right: function (obj, obj2) {
+                    let self = BodyManager;
+
+                    obj.collisionStatus.velocity.x = 0;
+
+                    self.adjustCollisionObj(obj, obj2, self.OVERLAP_TYPE.RIGHT)
+
+
+                },
+                Left: function (obj, obj2) {
+                    let self = BodyManager;
+
+                    obj.collisionStatus.velocity.x = 0;
+
+                    self.adjustCollisionObj(obj, obj2, self.OVERLAP_TYPE.LEFT)
+
+
+                }
             },
             setIsFly: function (obj) {
                 if (this.isMovableType(obj) && obj.collisionStatus.isground) {
                     obj.collisionStatus.isground = false;
                 }
             },
-            isOverlap_rect: function (r1, r2) {
+            detectOverlap_rect: function (r1, r2) {
                 let r1l = r1.x - r1.width / 2;
                 let r1r = r1.x + r1.width / 2;
                 let r1t = r1.y - r1.height / 2;
@@ -59,41 +106,76 @@
                 let r2t = r2.y - r2.height / 2;
                 let r2b = r2.y + r2.height / 2;
 
-                return !(r2l > r1r ||
-                    r2r < r1l ||
-                    r2t > r1b ||
-                    r2b < r1t);
+                let isOverlap = !(r2l > r1r || r2r < r1l || r2t > r1b || r2b < r1t);
+                if (isOverlap) {
+                    //distance buttom,left,right
+                    let Err = [Math.abs(r1b - r2t), Math.abs(r1l - r2r), Math.abs(r1r - r2l)];
+                    let smallestIndex = 0;
+                    var lowest = Number.POSITIVE_INFINITY;
+                    for (var i = 0; i < Err.length; i++) {
+                        if (Err[i] < lowest) {
+                            lowest = Err[i];
+                            smallestIndex = i;
+                        }
+                    }
+                    if (smallestIndex == 1 && !(r2t > r1b || r2b < r1t)) {
+                        return this.OVERLAP_TYPE.RIGHT;
+                    }
+                    else if (smallestIndex == 2 && !(r2l > r1r || r2r < r1l)) {
+                        return this.OVERLAP_TYPE.LEFT;
+                    }
+                    else if (smallestIndex == 0 && !(r2l > r1r || r2r < r1l)) {
+                        return this.OVERLAP_TYPE.TOP;
+                    }
+
+                } else {
+                    return this.OVERLAP_TYPE.NONE;
+                }
             },
             Updata: function () {
 
                 let movableObjs = this.objects.filter(o => this.isMovableType(o));
                 for (var i = 0; i < movableObjs.length; i++) {
                     let movableObj = movableObjs[i];
-                    movableObj.pos.x += 3;
-                    let isTouchGround = false;
+                    let isTouch = { Ground: false, Right: false, Left: false };
+
                     for (var j = 0; j < this.objects.length; j++) {
 
 
                         let obj2 = this.objects[j]
                         if (movableObj.id == obj2.id) continue;
 
-                        if (this.isOverlap_rect(this.getRealBody(movableObj), this.getRealBody(obj2))) {
-                            isTouchGround = true;
-                            this.setIsGround(movableObj);
+                        let overlapType = this.detectOverlap_rect(this.getRealBody(movableObj), this.getRealBody(obj2))
+
+                        if (overlapType == this.OVERLAP_TYPE.TOP) {
+                            isTouch.Ground = true;
+                            this.setPos.Ground(movableObj, obj2);
+                        }
+                        else if (overlapType == this.OVERLAP_TYPE.RIGHT) {
+                            isTouch.Right = true;
+                            this.setPos.Right(movableObj, obj2);
+                        }
+                        else if (overlapType == this.OVERLAP_TYPE.LEFT) {
+                            isTouch.LEFT = true;
+                            this.setPos.Left(movableObj, obj2);
+                        }
+
+
+                        if (isTouch.Ground == true && (isTouch.Right || isTouch.LEFT)) {
                             break;
                         }
+
                     }
-                    if (movableObj.collisionStatus.isground && !isTouchGround) {
-                        console.log('123');
+                    if (movableObj.collisionStatus.isground && !isTouch.Ground) {
                         this.setIsFly(movableObj)
                     }
 
                 }
-                /*
+
                 for (var i = 0; i < this.objects.length; i++) {
                     let obj = this.objects[i];
                     MethodManager.debug(this.getRealBody(obj))
-                }*/
+                }
             }
 
         }
@@ -101,22 +183,42 @@
             copyObject: function (obj) {
                 return JSON.parse(JSON.stringify(obj));
             },
-            gravity: function (velocity) {
-                velocity.y += CharaData.gravitySpeed;
+            acceleration: function (collisionStatus, A, limit) {
+                if (A.x != null) {
+                    let dirX = Math.sign(A.x);
+                    collisionStatus.velocity.x += A.x;
+
+                    if (dirX == 1 && collisionStatus.velocity.x > limit.x ||
+                        dirX == -1 && collisionStatus.velocity.x < limit.x) {
+                        collisionStatus.velocity.x = limit.x;
+
+                    }
+
+
+                }
+                if (A.y != null) {
+                    collisionStatus.velocity.y += A.y;
+                    if (collisionStatus.velocity.y > limit.y) {
+                        collisionStatus.velocity.y = limit.y;
+                    }
+                }
             },
-            moveing: function (position, velocity) {
-                position.x += velocity.x;
-                position.y += velocity.y;
+            gravity: function (collisionStatus) {
+                this.acceleration(collisionStatus, { y: CharaData.gravitySpeed }, { y: CharaData.velocityLimit.y });
             },
-            maxVelocityLimit: function (velocity, limitX, limitY) {
+            moving: function (collisionStatus) {
+                collisionStatus.position.x += collisionStatus.velocity.x * collisionStatus.dir.x;
+                collisionStatus.position.y += collisionStatus.velocity.y * collisionStatus.dir.y;
+            },
+            maxVelocityLimit: function (collisionStatus, limitX, limitY) {
                 if (limitY) {
-                    if (velocity.y > CharaData.velocityLimit.y) {
-                        velocity.y = CharaData.velocityLimit.y;
+                    if (collisionStatus.velocity.y > CharaData.velocityLimit.y) {
+                        collisionStatus.velocity.y = CharaData.velocityLimit.y;
                     }
                 }
                 if (limitX) {
-                    if (velocity.x > CharaData.velocityLimit.x) {
-                        velocity.x = CharaData.velocityLimit.x;
+                    if (collisionStatus.velocity.x > CharaData.velocityLimit.x) {
+                        collisionStatus.velocity.x = CharaData.velocityLimit.x;
                     }
                 }
             },
@@ -124,26 +226,46 @@
                 return ImgFactory[ObjectData.filter(data => data.type == obj.type)[0].name];
             },
             fk: 0,
-            imgFactoryDraw: function (ImgFactoryObj, replacePos, replaceSize, rotateAngle) {
-
-                let x = (replacePos == null) ? ImgFactoryObj.x : replacePos.x;
-                let y = (replacePos == null) ? ImgFactoryObj.y : replacePos.y;
-                let width = (replaceSize == null) ? ImgFactoryObj.width : replaceSize.width;
-                let height = (replaceSize == null) ? ImgFactoryObj.height : replaceSize.height;
+            imgFactoryDraw: function (ImgFactoryObj, para) {
 
 
-                let angle = (rotateAngle == null) ? 0 : rotateAngle;
+                let obj = {};
+                obj = ImgFactoryObj;
+                obj.angle = 0;
+                obj.flipX = 1;
 
-                /*
-                width -= this.fk;
-                height -= this.fk;
-                this.fk += 0.1;*/
+                if (para != null) {
+                    if (para.replacePos != null) {
+                        obj.x = para.replacePos.x;
+                        obj.y = para.replacePos.y;
+                    }
+                    if (para.rotateAngle != null) {
+                        obj.angle = para.rotateAngle;
+                    }
+                    if (para.collisionStatus != null) {
+                        obj.x = para.collisionStatus.position.x;
+                        obj.y = para.collisionStatus.position.y;
+                        obj.width = para.collisionStatus.size.width;
+                        obj.height = para.collisionStatus.size.height;
+                        obj.angle = para.collisionStatus.angle;
+                        if (para.collisionStatus.dir != null) {
+                            obj.flipX = para.collisionStatus.dir.x;
+                        }
+                    }
+                }
+
+
 
                 gameCtx.save();
-                gameCtx.translate(x, y);
-                gameCtx.rotate(angle * Math.PI / 180);
+
+                if (obj.flipX == -1) {
+                    gameCtx.translate(2 * obj.x, 0);
+                    gameCtx.scale(obj.flipX, 1);
+                }
+                gameCtx.translate(obj.x, obj.y);
+                gameCtx.rotate(obj.angle * Math.PI / 180);
                 gameCtx.globalAlpha = 1;
-                gameCtx.drawImage(ImgFactoryObj.img, -width / 2, -height / 2, width, height);
+                gameCtx.drawImage(obj.img, -obj.width / 2, -obj.height / 2, obj.width, obj.height);
                 gameCtx.restore();
 
 
@@ -152,7 +274,7 @@
             debug: function (ob) {
                 gameCtx.save();
                 gameCtx.translate(ob.x, ob.y);
-                gameCtx.globalAlpha = 0.5;
+                gameCtx.globalAlpha = 0.2;
                 gameCtx.fillStyle = "#FF0000";
                 gameCtx.fillRect(-ob.width / 2, -ob.height / 2, ob.width, ob.height);
                 gameCtx.restore();
@@ -239,8 +361,8 @@
                     MethodManager.imgFactoryDraw(ImgFactory.menu_bg);
                     for (var i = 0; i < ImgFactory.menu_btns.length; i++) {
                         MethodManager.imgFactoryDraw(ImgFactory.menu_btns[i]);
-                        MethodManager.imgFactoryDraw(ImgFactory.menu_circle1, ImgFactory.menu_btns[i], null, this.circle1Angle)
-                        MethodManager.imgFactoryDraw(ImgFactory.menu_circle2, ImgFactory.menu_btns[i], null, this.circle2Angle)
+                        MethodManager.imgFactoryDraw(ImgFactory.menu_circle1, { replacePos: ImgFactory.menu_btns[i], rotateAngle: this.circle1Angle })
+                        MethodManager.imgFactoryDraw(ImgFactory.menu_circle2, { replacePos: ImgFactory.menu_btns[i], rotateAngle: this.circle2Angle })
                     }
                     MethodManager.imgFactoryDraw(ImgFactory.menu_title)
                 }
@@ -305,51 +427,225 @@
                 },
                 chara: {
 
-                    position: {},
-                    body: {},
-                    size: {},
-                    collisionStatus: { velocity: { x: 0, y: 0 }, isground: false, canfall: true },
+                    collisionStatus: {
+                        dir: { x: 1, y: 1 },
+                        position: {},
+                        body: {},
+                        size: {},
+                        velocity: { x: 0, y: 0 },
+                        isground: false,
+                        isrun: false,
+                        canfall: true
+                    },
 
                     currentFrame: 0,
                     frameTime: 0,
                     action: "",
 
+                    keydown: {
+                        right: { flag: false, presstime: 0 },
+                        left: { flag: false, presstime: 0, buffertime: 0 }
+                    },
+
                     init: function () {
                         this.status = varableManager.stage.status;
 
 
                     },
                     gameStartInit: function () {
-                        this.position = this.status.currentStage.startPoint;
+
                         this.action = CharaData.ACTION.STAND;
 
-                        this.body = MethodManager.copyObject(CharaData.body);
-                        this.size = MethodManager.copyObject(this.currentImageObj());
+                        this.collisionStatus.position = this.status.currentStage.startPoint;
+                        this.collisionStatus.body = MethodManager.copyObject(CharaData.body);
+                        this.collisionStatus.size = MethodManager.copyObject(this.currentImageObj());
 
-                        BodyManager.insertNewBody(BodyManager.TYPE.CHARA, this.position, this.body, this.collisionStatus);
+                        this.actionManager.gameStartInit();
+                        this.physicManager.gameStartInit();
+                        this.keyDownManager.gameStartInit();
 
-                    },
-                    frameManager: function () {
-                        this.frameTime++;
-                        if (this.frameTime >= CharaData[this.action].frameTime) {
-                            this.frameTime = 0
-                            this.currentFrame++;
-                            if (this.currentFrame >= ImgFactory[this.action].length - 1) {
-                                this.currentFrame = 0;
-                            }
-                        }
+                        BodyManager.insertNewBody(this.collisionStatus);
 
                     },
+
                     currentImageObj: function () {
                         return ImgFactory[this.action][this.currentFrame];
                     },
-                    getBody: function () {
-                        return {
-                            x: CharaData.body.x + this.position.x,
-                            y: CharaData.body.y + this.position.y,
-                            width: CharaData.body.width,
-                            height: CharaData.body.height
 
+                    actionManager: {
+                        self: {},
+                        gameStartInit: function () {
+                            self = varableManager.stage.chara;
+                        },
+                        frameInit: function () {
+                            self.frameTime = 0;
+                            self.currentFrame = 0;
+                        },
+                        frameManager: function () {
+                            self.frameTime++;
+                            if (self.frameTime >= CharaData[self.action].frameTime) {
+                                self.frameTime = 0
+                                self.currentFrame++;
+                                if (self.currentFrame >= ImgFactory[self.action].length - 1) {
+                                    self.currentFrame = 0;
+                                }
+                            }
+
+                        },
+                        changeAction(action) {
+                            if (self.action != action) {
+                                this.frameInit();
+                            }
+                            self.action = action;
+                        },
+                        detectAction: function () {
+                            if (!self.collisionStatus.isground) {
+                                this.changeAction(CharaData.ACTION.FALL)
+                            }
+                            else if (self.collisionStatus.isrun) {
+                                this.changeAction(CharaData.ACTION.RUN)
+                            }
+                            else {
+                                this.changeAction(CharaData.ACTION.STAND)
+                            }
+                        },
+                        Update: function () {
+                            this.frameManager();
+                            this.detectAction();
+                        }
+
+                    },
+                    keyDownManager: {
+                        self: {},
+                        gameStartInit: function () {
+                            self = varableManager.stage.chara;
+                        },
+                        leftright: {
+                            flag: function (isRight, flag) {
+                                if (isRight) {
+                                    self.keydown.right.flag = flag
+                                } else {
+                                    self.keydown.left.flag = flag
+                                }
+                            },
+                            getflag: function (isRight) {
+                                return (isRight) ? self.keydown.right.flag : self.keydown.left.flag;
+                            },
+                            initTime: function (isRight) {
+                                if (isRight) {
+                                    self.keydown.right.presstime = 0;
+                                } else {
+                                    self.keydown.left.presstime = 0;
+                                }
+                            },
+                        }
+
+
+
+                    },
+                    physicManager: {
+                        self: {},
+                        gameStartInit: function () {
+                            self = varableManager.stage.chara;
+                            this.runManager.gameStartInit();
+                        },
+                        runManager: {
+                            self: {},
+                            gameStartInit: function () {
+                                self = varableManager.stage.chara;
+                            },
+                            setRunInit: function () {
+                                self.collisionStatus.isrun = false;
+                            },
+                            setRunSpeedZero: function () {
+                                self.collisionStatus.velocity.x = 0;
+                            },
+                            isRun: function () {
+                                let flag = 0;
+                                if (self.collisionStatus.isrun) flag = self.collisionStatus.dir.x
+                                return flag;
+                            },
+                            setRun: function (flag, dirX) {
+                                if (dirX != null) {
+                                    self.collisionStatus.dir.x = dirX;
+                                }
+                                self.collisionStatus.isrun = flag;
+                            },
+
+                            running: function () {
+                                if (self.collisionStatus.isrun) {
+                                    let maxMoveSpeed = ((self.collisionStatus.isground) ? 1 : CharaData.skyMoveSpeedDelta) * CharaData.maxMoveSpeed;
+                                    MethodManager.acceleration(self.collisionStatus, { x: CharaData.perMoveSpeed }, { x: maxMoveSpeed })
+                                }
+                                else {
+                                    MethodManager.acceleration(self.collisionStatus, { x: -CharaData.perDecreaseSpeed }, { x: 0 })
+                                }
+                            },
+
+                            Update: function () {
+                                let right = self.keydown.right;
+                                let left = self.keydown.left;
+
+                                if (left.buffertime > 0) {
+                                    left.buffertime--;
+                                }
+
+
+                                if (right.flag && right.presstime == 0 && left.presstime == 0) {
+                                    this.setRunInit();
+                                }
+                                if (right.flag && right.presstime == 0 && left.buffertime != 0) {
+                                    left.buffertime = 0;
+                                    this.setRunSpeedZero();
+                                }
+                                if (left.flag && left.presstime == 0) {
+                                    this.setRunSpeedZero();
+                                    this.setRunInit();
+                                }
+
+
+
+
+
+                                if (right.flag) {
+                                    right.presstime++;
+                                    this.setRun(true, 1);
+                                } else if (!right.flag && right.presstime > 0 && left.presstime == 0) {
+                                    right.presstime = 0;
+                                    this.setRunInit();
+                                }
+
+                                if (left.flag) {
+
+                                    left.presstime++;
+                                    this.setRun(true, -1);
+                                } else if (!left.flag && left.presstime > 0) {
+                                    left.presstime = 0;
+                                    left.buffertime = 3;
+
+                                    if (right.flag) {
+                                        this.setRunSpeedZero();
+                                    }
+                                    this.setRunInit();
+                                }
+
+
+
+
+
+
+
+                                this.running();
+                            }
+
+
+                        },
+                        Update: function () {
+                            if (!self.collisionStatus.isground) {
+                                MethodManager.gravity(self.collisionStatus);
+                            }
+                            this.runManager.Update();
+                            MethodManager.moving(self.collisionStatus);
                         }
                     },
 
@@ -357,36 +653,38 @@
                         if (!this.status.isOpen) return;
 
 
-                        this.frameManager();
-                        if (!this.collisionStatus.isground) {
-                            MethodManager.gravity(this.collisionStatus.velocity);
-                        }
-                        MethodManager.maxVelocityLimit(this.collisionStatus.velocity, true, true);
-                        MethodManager.moveing(this.position, this.collisionStatus.velocity);
+                        this.actionManager.Update();
+                        this.physicManager.Update();
 
 
-                        MethodManager.imgFactoryDraw(this.currentImageObj(), this.position, this.size)
+                        MethodManager.imgFactoryDraw(this.currentImageObj(), { collisionStatus: this.collisionStatus })
 
 
                     }
                 },
                 objects: {
-                    store: {},
+                    store: [],
                     init: function () {
                         this.status = varableManager.stage.status;
                     },
                     gameStartInit: function () {
-                        this.store = MethodManager.copyObject(this.status.currentStage.objects);
-                        for (var i = 0; i < this.store.length; i++) {
+                        let currentStageObjs = MethodManager.copyObject(this.status.currentStage.objects);
 
-                            let imgFactoryObj = MethodManager.getImgFactoryObj(this.store[i]);
+                        for (var i = 0; i < currentStageObjs.length; i++) {
+                            this.store[i] = {};
+
+                            let imgFactoryObj = MethodManager.getImgFactoryObj(currentStageObjs[i]);
+
+                            let collisionStatus = Object.assign({ isground: false, canfall: false }, currentStageObjs[i]);
+                            collisionStatus.size = { x: 0, y: 0, width: imgFactoryObj.width, height: imgFactoryObj.height };
+                            collisionStatus.body = MethodManager.copyObject(collisionStatus.size);
+
                             this.store[i].imgFactoryObj = { img: imgFactoryObj.img };
-                            this.store[i].size = MethodManager.copyObject(imgFactoryObj);
-                            this.store[i].collisionStatus = { isground: false, canfall: false };
+                            this.store[i].collisionStatus = collisionStatus;
 
                             let obj = this.store[i];
 
-                            BodyManager.insertNewBody(BodyManager.TYPE.CUBE, obj.position, obj.size, obj.collisionStatus);
+                            BodyManager.insertNewBody(obj.collisionStatus);
                         }
 
                     },
@@ -396,7 +694,7 @@
                         for (var i = 0; i < this.store.length; i++) {
                             let obj = this.store[i];
 
-                            MethodManager.imgFactoryDraw(obj.imgFactoryObj, obj.position, obj.size, obj.angle)
+                            MethodManager.imgFactoryDraw(obj.imgFactoryObj, { collisionStatus: obj.collisionStatus })
                         }
                     }
                 },
@@ -500,9 +798,57 @@
 
             keydown: {
                 initEvent: function () {
+
+                    let keydown = {
+                        right: { flag: false, presstime: 0 },
+                        left: { flag: false, presstime: 0 }
+                    };
                     window.addEventListener("keydown", function (e) {
                         if (varableManager.stage.status.game.isStart()) {
-                            console.log('15fsd6')
+                            let Chara = varableManager.stage.chara;
+                            switch (e.keyCode) {
+                                case 39:
+                                    if (!Chara.keyDownManager.leftright.getflag(true)) {
+                                        Chara.keyDownManager.leftright.initTime(true);
+                                        Chara.keyDownManager.leftright.flag(true, true);
+                                    }
+                                    else {
+                                        return;
+                                    }
+                                    break;
+                                case 37:
+                                    if (!Chara.keyDownManager.leftright.getflag(false)) {
+                                        Chara.keyDownManager.leftright.initTime(false);
+                                        Chara.keyDownManager.leftright.flag(false, true);
+                                    }
+                                    else {
+                                        return;
+                                    }
+                                    break;
+                            }
+
+
+
+
+                        }
+
+                        if ([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+                            e.preventDefault();
+                        }
+                    }, false);
+                    window.addEventListener("keyup", function (e) {
+                        if (varableManager.stage.status.game.isStart()) {
+                            let Chara = varableManager.stage.chara;
+                            switch (e.keyCode) {
+                                case 39:
+                                    Chara.keyDownManager.leftright.flag(true, false);
+                                    break;
+                                case 37:
+                                    Chara.keyDownManager.leftright.flag(false, false);
+                                    break;
+                            }
+
+
                         }
 
                         if ([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {

@@ -2,6 +2,7 @@
     "ACTION": {
         "STAND": "Stand",
         "HURT": "Hurt",
+        "FALL": "Fall",
         "JUMP": "Jump",
         "RUN": "Run",
         "SHOOT_F": "Shoot_F",
@@ -16,8 +17,12 @@
     "gravitySpeed": 0.392,
     "velocityLimit": {
         "x": 7,
-        "y": 9
+        "y": 10
     },
+    "maxMoveSpeed": 5,
+    "perMoveSpeed": 0.3,
+    "perDecreaseSpeed": 0.5,
+    "skyMoveSpeedDelta": 0.7,
     "body": {
         "x": 0,
         "y": 0,
@@ -26,5 +31,11 @@
     },
     "Stand": {
         "frameTime": 25
+    },
+    "Run": {
+        "frameTime": 7
+    },
+    "Fall": {
+        "frameTime": 7
     }
 }

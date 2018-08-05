@@ -148,14 +148,69 @@
             "height": 100,
             "x": 0,
             "y": 0
-        },{
+        },
+        {
             "src": "chara/Stand1.png",
             "width": 100,
             "height": 100,
             "x": 0,
             "y": 0
-        },{
+        },
+        {
             "src": "chara/Stand2.png",
+            "width": 100,
+            "height": 100,
+            "x": 0,
+            "y": 0
+        }
+    ],
+    "Run": [
+        {
+            "src": "chara/Run0.png",
+            "width": 100,
+            "height": 100,
+            "x": 0,
+            "y": 0
+        },
+        {
+            "src": "chara/Run1.png",
+            "width": 100,
+            "height": 100,
+            "x": 0,
+            "y": 0
+        },
+        {
+            "src": "chara/Run2.png",
+            "width": 100,
+            "height": 100,
+            "x": 0,
+            "y": 0
+        },
+        {
+            "src": "chara/Run3.png",
+            "width": 100,
+            "height": 100,
+            "x": 0,
+            "y": 0
+        },
+        {
+            "src": "chara/Run2.png",
+            "width": 100,
+            "height": 100,
+            "x": 0,
+            "y": 0
+        },
+        {
+            "src": "chara/Run1.png",
+            "width": 100,
+            "height": 100,
+            "x": 0,
+            "y": 0
+        }
+    ],
+    "Fall": [
+        {
+            "src": "chara/Jump4.png",
             "width": 100,
             "height": 100,
             "x": 0,
