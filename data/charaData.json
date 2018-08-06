@@ -2,8 +2,9 @@
     "ACTION": {
         "STAND": "Stand",
         "HURT": "Hurt",
+        "JUMP_UP": "JumpUp",
+        "JUMP_TOP": "JumpTop",
         "FALL": "Fall",
-        "JUMP": "Jump",
         "RUN": "Run",
         "SHOOT_F": "Shoot_F",
         "SHOOT_FD": "Shoot_FD",
@@ -21,8 +22,10 @@
     },
     "maxMoveSpeed": 5,
     "perMoveSpeed": 0.3,
-    "perDecreaseSpeed": 0.5,
-    "skyMoveSpeedDelta": 0.7,
+    "perDecreaseSpeed": 0.45,
+    "skyMoveSpeedDelta": 1,
+    "skyDecreaseSpeedDelta": 0.55,
+    "jumpForce": 10,
     "body": {
         "x": 0,
         "y": 0,
@@ -30,12 +33,24 @@
         "height": 86
     },
     "Stand": {
+        "isLoop": true,
         "frameTime": 25
     },
     "Run": {
+        "isLoop": true,
         "frameTime": 7
     },
+    "JumpUp": {
+        "isLoop": false,
+        "nextAction": "JumpTop",
+        "frameTime": 5
+    },
+    "JumpTop": {
+        "isLoop": true,
+        "frameTime": 5
+    },
     "Fall": {
+        "isLoop": true,
         "frameTime": 7
     }
 }

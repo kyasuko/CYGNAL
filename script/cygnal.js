@@ -96,7 +96,10 @@
                     obj.collisionStatus.isground = false;
                 }
             },
-            detectOverlap_rect: function (r1, r2) {
+            detectOverlap_rect: function (r1, r1CollisionStatus, r2) {
+
+
+
                 let r1l = r1.x - r1.width / 2;
                 let r1r = r1.x + r1.width / 2;
                 let r1t = r1.y - r1.height / 2;
@@ -106,10 +109,18 @@
                 let r2t = r2.y - r2.height / 2;
                 let r2b = r2.y + r2.height / 2;
 
-                let isOverlap = !(r2l > r1r || r2r < r1l || r2t > r1b || r2b < r1t);
+
+                let isLNotOverlap = r2l > r1r;
+                let isRNotOverlap = r2r < r1l;
+                let isTNotOverlap = r2t > r1b;
+                let isBNotOverlap = r2b < r1t;
+
+
+                let isOverlap = !(isLNotOverlap || isRNotOverlap || isTNotOverlap || isBNotOverlap);
                 if (isOverlap) {
+
                     //distance buttom,left,right
-                    let Err = [Math.abs(r1b - r2t), Math.abs(r1l - r2r), Math.abs(r1r - r2l)];
+                    let Err = [Math.abs(r1b - r2t), Math.abs(r1l - r2r) * 2, Math.abs(r1r - r2l) * 2];
                     let smallestIndex = 0;
                     var lowest = Number.POSITIVE_INFINITY;
                     for (var i = 0; i < Err.length; i++) {
@@ -118,13 +129,13 @@
                             smallestIndex = i;
                         }
                     }
-                    if (smallestIndex == 1 && !(r2t > r1b || r2b < r1t)) {
+                    if (smallestIndex == 1 && !(isTNotOverlap || isBNotOverlap)) {
                         return this.OVERLAP_TYPE.RIGHT;
                     }
-                    else if (smallestIndex == 2 && !(r2l > r1r || r2r < r1l)) {
+                    else if (smallestIndex == 2 && !(isTNotOverlap || isBNotOverlap)) {
                         return this.OVERLAP_TYPE.LEFT;
                     }
-                    else if (smallestIndex == 0 && !(r2l > r1r || r2r < r1l)) {
+                    else if (smallestIndex == 0 && !(isLNotOverlap || isRNotOverlap)) {
                         return this.OVERLAP_TYPE.TOP;
                     }
 
@@ -137,34 +148,44 @@
                 let movableObjs = this.objects.filter(o => this.isMovableType(o));
                 for (var i = 0; i < movableObjs.length; i++) {
                     let movableObj = movableObjs[i];
+                    let TouchTopBottomIndex = -1;
                     let isTouch = { Ground: false, Right: false, Left: false };
 
                     for (var j = 0; j < this.objects.length; j++) {
-
-
                         let obj2 = this.objects[j]
                         if (movableObj.id == obj2.id) continue;
 
-                        let overlapType = this.detectOverlap_rect(this.getRealBody(movableObj), this.getRealBody(obj2))
+                        let overlapType = this.detectOverlap_rect(this.getRealBody(movableObj), movableObj.collisionStatus, this.getRealBody(obj2))
 
                         if (overlapType == this.OVERLAP_TYPE.TOP) {
+                            TouchTopBottomIndex = j;
                             isTouch.Ground = true;
                             this.setPos.Ground(movableObj, obj2);
-                        }
-                        else if (overlapType == this.OVERLAP_TYPE.RIGHT) {
-                            isTouch.Right = true;
-                            this.setPos.Right(movableObj, obj2);
-                        }
-                        else if (overlapType == this.OVERLAP_TYPE.LEFT) {
-                            isTouch.LEFT = true;
-                            this.setPos.Left(movableObj, obj2);
-                        }
-
-
-                        if (isTouch.Ground == true && (isTouch.Right || isTouch.LEFT)) {
                             break;
                         }
 
+
+                    }
+                    for (var j = 0; j < this.objects.length; j++) {
+
+                        let obj2 = this.objects[j]
+                        if (TouchTopBottomIndex == j) continue;
+                        if (movableObj.id == obj2.id) continue;
+
+                        let overlapType = this.detectOverlap_rect(this.getRealBody(movableObj), movableObj.collisionStatus, this.getRealBody(obj2))
+
+                        if (overlapType == this.OVERLAP_TYPE.RIGHT) {
+                            console.log('fk');
+                            isTouch.Right = true;
+                            this.setPos.Right(movableObj, obj2);
+                            break;
+                        }
+                        else if (overlapType == this.OVERLAP_TYPE.LEFT) {
+                            console.log('fk');
+                            isTouch.LEFT = true;
+                            this.setPos.Left(movableObj, obj2);
+                            break;
+                        }
                     }
                     if (movableObj.collisionStatus.isground && !isTouch.Ground) {
                         this.setIsFly(movableObj)
@@ -180,6 +201,17 @@
 
         }
         let MethodManager = {
+            collisionStatus: {
+                dir: { x: 1, y: 1 },
+                position: {},
+                body: {},
+                size: {},
+                velocity: { x: 0, y: 0 },
+                isground: false,
+                isrun: false,
+                isjump: false,
+                canfall: false
+            },
             copyObject: function (obj) {
                 return JSON.parse(JSON.stringify(obj));
             },
@@ -427,16 +459,7 @@
                 },
                 chara: {
 
-                    collisionStatus: {
-                        dir: { x: 1, y: 1 },
-                        position: {},
-                        body: {},
-                        size: {},
-                        velocity: { x: 0, y: 0 },
-                        isground: false,
-                        isrun: false,
-                        canfall: true
-                    },
+                    collisionStatus: {},
 
                     currentFrame: 0,
                     frameTime: 0,
@@ -444,7 +467,9 @@
 
                     keydown: {
                         right: { flag: false, presstime: 0 },
-                        left: { flag: false, presstime: 0, buffertime: 0 }
+                        left: { flag: false, presstime: 0, buffertime: 0 },
+                        keyX: { flag: false, presstime: 0 },
+                        keyZ: { flag: false, presstime: 0 }
                     },
 
                     init: function () {
@@ -456,6 +481,8 @@
 
                         this.action = CharaData.ACTION.STAND;
 
+                        this.collisionStatus = MethodManager.copyObject(MethodManager.collisionStatus);
+                        this.collisionStatus.canfall = true;
                         this.collisionStatus.position = this.status.currentStage.startPoint;
                         this.collisionStatus.body = MethodManager.copyObject(CharaData.body);
                         this.collisionStatus.size = MethodManager.copyObject(this.currentImageObj());
@@ -482,11 +509,15 @@
                             self.currentFrame = 0;
                         },
                         frameManager: function () {
+                            let currentAction = CharaData[self.action];
                             self.frameTime++;
-                            if (self.frameTime >= CharaData[self.action].frameTime) {
+                            if (self.frameTime >= currentAction.frameTime) {
                                 self.frameTime = 0
                                 self.currentFrame++;
-                                if (self.currentFrame >= ImgFactory[self.action].length - 1) {
+                                if (self.currentFrame >= ImgFactory[self.action].length) {
+                                    if (!currentAction.isLoop) {
+                                        this.changeAction(currentAction.nextAction);
+                                    }
                                     self.currentFrame = 0;
                                 }
                             }
@@ -499,7 +530,16 @@
                             self.action = action;
                         },
                         detectAction: function () {
-                            if (!self.collisionStatus.isground) {
+                            if (self.action == CharaData.ACTION.JUMP_TOP && !self.collisionStatus.isground) {
+                                if (self.collisionStatus.velocity.y > 6) {
+                                    this.changeAction(CharaData.ACTION.FALL);
+                                    self.collisionStatus.isjump = false;
+                                }
+                            }
+                            else if (self.collisionStatus.isjump) {
+                                this.changeAction(CharaData.ACTION.JUMP_UP)
+                            }
+                            else if (!self.collisionStatus.isground) {
                                 this.changeAction(CharaData.ACTION.FALL)
                             }
                             else if (self.collisionStatus.isrun) {
@@ -519,25 +559,50 @@
                         self: {},
                         gameStartInit: function () {
                             self = varableManager.stage.chara;
+                            this.keyX.init();
+                            this.keyZ.init();
+                            this.left.init();
+                            this.right.init();
                         },
-                        leftright: {
-                            flag: function (isRight, flag) {
-                                if (isRight) {
-                                    self.keydown.right.flag = flag
-                                } else {
-                                    self.keydown.left.flag = flag
-                                }
+                        template: {
+                            key: {},
+                            setKey: function (key) {
+                                this.key = key;
                             },
-                            getflag: function (isRight) {
-                                return (isRight) ? self.keydown.right.flag : self.keydown.left.flag;
+                            flag: function (flag) {
+                                this.key.flag = flag
                             },
-                            initTime: function (isRight) {
-                                if (isRight) {
-                                    self.keydown.right.presstime = 0;
-                                } else {
-                                    self.keydown.left.presstime = 0;
-                                }
+                            getflag: function () {
+                                return this.key.flag;
                             },
+                            initTime: function () {
+                                this.key.presstime = 0;
+                            },
+
+                        },
+                        keyX: {
+                            init: function () {
+                                Object.assign(this, self.keyDownManager.template);
+                                this.setKey(self.keydown.keyX);
+                            }
+                        },
+                        keyZ: {
+                            init: function () {
+                                Object.assign(this, self.keyDownManager.template);
+                                this.setKey(self.keydown.keyZ);
+                            }
+                        },
+                        left: {
+                            init: function () {
+                                Object.assign(this, self.keyDownManager.template);
+                                this.setKey(self.keydown.left);
+                            }
+                        },
+                        right: {
+                            init: function () {
+                                Object.assign(this, self.keyDownManager.template);
+                                this.setKey(self.keydown.right);
+                            }
                         }
 
 
@@ -548,37 +613,74 @@
                         gameStartInit: function () {
                             self = varableManager.stage.chara;
                             this.runManager.gameStartInit();
+                            this.jumpManager.gameStartInit();
+                        },
+                        jumpManager: {
+                            self: {},
+                            Method: {
+                                addJumpForce: function () {
+                                    self.collisionStatus.velocity.y -= CharaData.jumpForce;
+                                },
+                                setJump: function (flag) {
+                                    self.collisionStatus.isjump = flag;
+                                }
+                            },
+                            gameStartInit: function () {
+                                self = varableManager.stage.chara;
+                            },
+                            Update: function () {
+                                let keyZ = self.keydown.keyZ;
+
+                                if (self.collisionStatus.isground) {
+                                    this.Method.setJump(false);
+                                }
+
+
+                                if (self.collisionStatus.isground && keyZ.flag && keyZ.presstime < 5) {
+                                    keyZ.presstime = 5;
+                                    this.Method.setJump(true);
+                                    this.Method.addJumpForce();
+                                }
+                                if (keyZ.flag) {
+                                    keyZ.presstime++;
+                                }
+
+                            }
+
                         },
                         runManager: {
                             self: {},
                             gameStartInit: function () {
                                 self = varableManager.stage.chara;
                             },
-                            setRunInit: function () {
-                                self.collisionStatus.isrun = false;
-                            },
-                            setRunSpeedZero: function () {
-                                self.collisionStatus.velocity.x = 0;
-                            },
-                            isRun: function () {
-                                let flag = 0;
-                                if (self.collisionStatus.isrun) flag = self.collisionStatus.dir.x
-                                return flag;
-                            },
-                            setRun: function (flag, dirX) {
-                                if (dirX != null) {
-                                    self.collisionStatus.dir.x = dirX;
-                                }
-                                self.collisionStatus.isrun = flag;
-                            },
+                            Method: {
+                                setRunInit: function () {
+                                    self.collisionStatus.isrun = false;
+                                },
+                                setRunSpeedZero: function () {
+                                    self.collisionStatus.velocity.x = 0;
+                                },
+                                isRun: function () {
+                                    let flag = 0;
+                                    if (self.collisionStatus.isrun) flag = self.collisionStatus.dir.x
+                                    return flag;
+                                },
+                                setRun: function (flag, dirX) {
+                                    if (dirX != null) {
+                                        self.collisionStatus.dir.x = dirX;
+                                    }
+                                    self.collisionStatus.isrun = flag;
+                                },
 
-                            running: function () {
-                                if (self.collisionStatus.isrun) {
-                                    let maxMoveSpeed = ((self.collisionStatus.isground) ? 1 : CharaData.skyMoveSpeedDelta) * CharaData.maxMoveSpeed;
-                                    MethodManager.acceleration(self.collisionStatus, { x: CharaData.perMoveSpeed }, { x: maxMoveSpeed })
-                                }
-                                else {
-                                    MethodManager.acceleration(self.collisionStatus, { x: -CharaData.perDecreaseSpeed }, { x: 0 })
+                                running: function () {
+                                    if (self.collisionStatus.isrun) {
+                                        let maxMoveSpeed = ((self.collisionStatus.isground) ? 1 : CharaData.skyMoveSpeedDelta) * CharaData.maxMoveSpeed;
+                                        MethodManager.acceleration(self.collisionStatus, { x: CharaData.perMoveSpeed }, { x: maxMoveSpeed })
+                                    }
+                                    else {
+                                        let perDecreaseSpeed = ((self.collisionStatus.isground) ? -1 : -CharaData.skyDecreaseSpeedDelta) * CharaData.perDecreaseSpeed;
+                                        MethodManager.acceleration(self.collisionStatus, { x: perDecreaseSpeed }, { x: 0 })
+                                    }
                                 }
                             },
 
@@ -592,15 +694,15 @@
 
 
                                 if (right.flag && right.presstime == 0 && left.presstime == 0) {
-                                    this.setRunInit();
+                                    this.Method.setRunInit();
                                 }
                                 if (right.flag && right.presstime == 0 && left.buffertime != 0) {
                                     left.buffertime = 0;
-                                    this.setRunSpeedZero();
+                                    this.Method.setRunSpeedZero();
                                 }
                                 if (left.flag && left.presstime == 0) {
-                                    this.setRunSpeedZero();
-                                    this.setRunInit();
+                                    this.Method.setRunSpeedZero();
+                                    this.Method.setRunInit();
                                 }
 
 
@@ -609,33 +711,27 @@
 
                                 if (right.flag) {
                                     right.presstime++;
-                                    this.setRun(true, 1);
+                                    this.Method.setRun(true, 1);
                                 } else if (!right.flag && right.presstime > 0 && left.presstime == 0) {
                                     right.presstime = 0;
-                                    this.setRunInit();
+                                    this.Method.setRunInit();
                                 }
 
                                 if (left.flag) {
-
                                     left.presstime++;
-                                    this.setRun(true, -1);
+                                    this.Method.setRun(true, -1);
                                 } else if (!left.flag && left.presstime > 0) {
                                     left.presstime = 0;
-                                    left.buffertime = 3;
+                                    left.buffertime = 7;
 
                                     if (right.flag) {
-                                        this.setRunSpeedZero();
+                                        this.Method.setRunSpeedZero();
                                     }
-                                    this.setRunInit();
+                                    this.Method.setRunInit();
                                 }
 
 
-
-
-
-
-
-                                this.running();
+                                this.Method.running();
                             }
 
 
@@ -644,7 +740,9 @@
                             if (!self.collisionStatus.isground) {
                                 MethodManager.gravity(self.collisionStatus);
                             }
+                            this.jumpManager.Update();
                             this.runManager.Update();
+
                             MethodManager.moving(self.collisionStatus);
                         }
                     },
@@ -675,7 +773,7 @@
 
                             let imgFactoryObj = MethodManager.getImgFactoryObj(currentStageObjs[i]);
 
-                            let collisionStatus = Object.assign({ isground: false, canfall: false }, currentStageObjs[i]);
+                            let collisionStatus = Object.assign(MethodManager.copyObject(MethodManager.collisionStatus), currentStageObjs[i]);
                             collisionStatus.size = { x: 0, y: 0, width: imgFactoryObj.width, height: imgFactoryObj.height };
                             collisionStatus.body = MethodManager.copyObject(collisionStatus.size);
 
@@ -799,28 +897,48 @@
             keydown: {
                 initEvent: function () {
 
-                    let keydown = {
-                        right: { flag: false, presstime: 0 },
-                        left: { flag: false, presstime: 0 }
-                    };
+
                     window.addEventListener("keydown", function (e) {
                         if (varableManager.stage.status.game.isStart()) {
                             let Chara = varableManager.stage.chara;
                             switch (e.keyCode) {
+                                //right
                                 case 39:
-                                    if (!Chara.keyDownManager.leftright.getflag(true)) {
-                                        Chara.keyDownManager.leftright.initTime(true);
-                                        Chara.keyDownManager.leftright.flag(true, true);
+                                    if (!Chara.keyDownManager.right.getflag()) {
+                                        Chara.keyDownManager.right.initTime();
+                                        Chara.keyDownManager.right.flag(true);
                                     }
                                     else {
                                         return;
                                     }
                                     break;
+                                //left
                                 case 37:
-                                    if (!Chara.keyDownManager.leftright.getflag(false)) {
-                                        Chara.keyDownManager.leftright.initTime(false);
-                                        Chara.keyDownManager.leftright.flag(false, true);
+                                    if (!Chara.keyDownManager.left.getflag()) {
+                                        Chara.keyDownManager.left.initTime();
+                                        Chara.keyDownManager.left.flag(true);
                                     }
+                                    else {
+                                        return;
+                                    }
+                                    break;
+                                //x
+                                case 88:
+                                    if (!Chara.keyDownManager.keyX.getflag()) {
+                                        Chara.keyDownManager.keyX.initTime();
+                                        Chara.keyDownManager.keyX.flag(true);
+                                    }
+                                    else {
+                                        return;
+                                    }
+                                    break;
+                                //z
+                                case 90:
+                                    if (!Chara.keyDownManager.keyZ.getflag()) {
+                                        Chara.keyDownManager.keyZ.initTime();
+                                        Chara.keyDownManager.keyZ.flag(true);
+                                    }
+
                                     else {
                                         return;
                                     }
@@ -841,10 +959,19 @@
                             let Chara = varableManager.stage.chara;
                             switch (e.keyCode) {
                                 case 39:
-                                    Chara.keyDownManager.leftright.flag(true, false);
+                                    Chara.keyDownManager.right.flag(false);
                                     break;
                                 case 37:
-                                    Chara.keyDownManager.leftright.flag(false, false);
+                                    Chara.keyDownManager.left.flag(false);
+                                    break;
+                                //x
+                                case 88:
+                                    Chara.keyDownManager.keyX.flag(false);
+                                    break;
+                                //z
+                                case 90:
+                                    Chara.keyDownManager.keyZ.flag(false);
+
                                     break;
                             }
 
