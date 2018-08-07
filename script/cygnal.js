@@ -192,11 +192,11 @@
                     }
 
                 }
-
-                for (var i = 0; i < this.objects.length; i++) {
-                    let obj = this.objects[i];
-                    MethodManager.debug(this.getRealBody(obj))
-                }
+                /*
+                                for (var i = 0; i < this.objects.length; i++) {
+                                    let obj = this.objects[i];
+                                    MethodManager.debug(this.getRealBody(obj))
+                                }*/
             }
 
         }
@@ -457,6 +457,17 @@
                         MethodManager.imgFactoryDraw(ImgFactory.stage_bg)
                     }
                 },
+                camera: {
+                    position: { x: 0, y: 0 },
+                    init: function () {
+                        this.status = varableManager.stage.status;
+                    },
+                    Updata: function () {
+                        if (!this.status.isOpen) return;
+
+
+                    }
+                },
                 chara: {
 
                     collisionStatus: {},
@@ -636,7 +647,7 @@
                                 }
 
 
-                                if (self.collisionStatus.isground && keyZ.flag && keyZ.presstime < 5) {
+                                if (self.collisionStatus.isground && keyZ.flag && keyZ.presstime < 6) {
                                     keyZ.presstime = 5;
                                     this.Method.setJump(true);
                                     this.Method.addJumpForce();
